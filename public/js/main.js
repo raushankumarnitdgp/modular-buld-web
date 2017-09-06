@@ -1,5 +1,22 @@
 let getNode,
-totalSize = 0,
+getSizeOfSelected = function (treeJSON) {
+  let modules = treeJSON.modules, totalSize = 0,
+    i = 0,
+    l = modules.length,
+    /**
+     * This methode prints totalsize of selected files on html page
+     */
+    printSizeSelected = function () {
+      //intitally total size is 0
+      document.getElementById('size').innerHTML = '<br>Total size of selected Files: '+totalSize+' bytes';
+    };
+    for (i = 0; i < l; i += 1) {
+      if(modules[i].included) {
+       totalSize += modules[i].size;
+      }
+    }
+  printSizeSelected();
+},
 /**
  * This function extract the file name from a string and return that
  * @param {String} str the path string
@@ -31,8 +48,7 @@ _includePublicDep = function (name) {
   if (node.selectionDep) {
     checkbox.disabled = true;
   }
-
-  console.log("Included Public: "+name);
+  //console.log("Included Public: "+name);
 },
 
 /**
@@ -41,14 +57,12 @@ _includePublicDep = function (name) {
  */
 _includeDep = function (name) {
   let node = getNode(name);
-  totalSize += (node.size || 0);
   // mark the code as included
   node.included = true;
-
   if (isPublic(node.name)) {
     _includePublicDep(name);
   } else {
-    console.log('non-public:- ' + name);
+    //console.log('non-public:- ' + name);
   }
 },
 /**
@@ -63,7 +77,7 @@ _selectIterator = function (name) {
   // if for the first time it is getting included
   if (!node.included) {
     // do the first inclusion procedure
-    _includeDep(name)
+    _includeDep(name);
   } else {
     // ** Special case **//
     // If the node is already included but it is a public one, then we might need to disable it
@@ -96,7 +110,7 @@ nodeSelect = function (name) {
 _excludePublicDep = function (name) {
   let node = getNode(name),
   checkbox = document.querySelector("input[name='" + name + "']");
-  if (checkbox && (!node.selectionDep || node.selectionDep === 0)) {
+  if (checkbox && !node.selectionDep ) {
     // remove the disablity
     checkbox.disabled = false;
     // if the node is seperately selected
@@ -105,7 +119,7 @@ _excludePublicDep = function (name) {
       checkbox.checked = false;
     }
   }
-  console.log("Excluding : "+name);
+  //console.log("Excluding : "+name);
 },
 /**
  * This method got traversed on all dependency nodes, then mark it excluded (included = false)
@@ -113,14 +127,13 @@ _excludePublicDep = function (name) {
  */
 _excludeDep = function (name) {
   let node = getNode(name);
-  totalSize -= (node.size || 0);
   // mark the code as included
   node.included = false;
-
+  //console.log("TotalSize: "+totalSize+" "+name+" "+node.size);
   if (isPublic(node.name)) {
     _excludePublicDep(name);
   } else {
-    console.log('non-public exclude:- ' + name);
+    //console.log('non-public exclude:- ' + name);
   }
 },
 
@@ -132,8 +145,9 @@ _deSelectIterator = function (name) {
   let node = getNode(name);
   // decrease the selectedDep count
   node.selectionDep = (node.selectionDep || 1) - 1;
+  console.log(node.name+ " "+node.selectionDep);
   // if for the first time it is getting included
-  if (!node.selectionDep && !node.directInclusion) {
+  if (!node.selectionDep && !node.directInclusion) { 
     // do the first inclusion procedure
     _excludeDep(name);
   } else {
@@ -152,7 +166,7 @@ _deSelectIterator = function (name) {
  */
 nodeDeSelect = function (name) {
   let node = getNode(name);
-  if (node) {
+  if (node && !node.selectionDep) {
     node.directInclusion = false;
     _excludeDep(name);
     // iterate the de-selector among all children
@@ -174,6 +188,7 @@ toggleSelect = function (e) {
     //   node.checked = !checkStatus;
     // }
   }
+ getSizeOfSelected(treeData);
 },
 
 /**
@@ -257,6 +272,7 @@ loadOptions = function (treeJSON) {
         for (ri = 0; ri < rl; ri += 1) {
           if (reasons[ri].moduleName === name) {
             traverseDeep = mapFn(modName);
+            //change here
             if (traverseDeep != false) {
               iterateDep(modName, mapFn);
             }
@@ -264,25 +280,6 @@ loadOptions = function (treeJSON) {
         }
       }
     }
-
-    /*
-    let node = getNode(name);
-    if (node && node.dep) {
-      let dep = node.dep,
-      key,
-      traverseDeep;
-      for (key in dep) {
-        if (dep.hasOwnProperty(key)) {
-          if (getNode(key)) {
-            traverseDeep = mapFn(key);
-            if (traverseDeep != false) {
-              iterateDep(key, mapFn);
-            }
-          }
-        }
-      }
-    }
-    */
   }
 
   for (key in treeJSON.modules) {
@@ -293,8 +290,8 @@ loadOptions = function (treeJSON) {
       }
     }
   }
+  getSizeOfSelected(treeData);  
 },
-
 /**
  * This methode handles all generated errors
  * @param  {Stirng} msg the error message
