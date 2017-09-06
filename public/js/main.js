@@ -104,7 +104,6 @@ _excludePublicDep = function (name) {
       // make it un-checked
       checkbox.checked = false;
     }
-    node.directInclusion = false;
   }
   console.log("Excluding : "+name);
 },
@@ -154,6 +153,7 @@ _deSelectIterator = function (name) {
 nodeDeSelect = function (name) {
   let node = getNode(name);
   if (node) {
+    node.directInclusion = false;
     _excludeDep(name);
     // iterate the de-selector among all children
     iterateDep(name, _deSelectIterator);
