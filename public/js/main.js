@@ -17,30 +17,6 @@ isPublic = function (modulePath) {
   return !!modulePath.match(/mantle\/renderer-javascript\/charts\//ig);
 },
 iterateDep,
-// /**
-//  * This method traverse through all dependencies node
-//  * @param  {String} name the name of node object, dependencies of which will be iterated
-//  * @param  {Function} mapFn function that will be called for each dependencies
-//  *                          If the function returns flase, then the dependencies of this node will not be traversed
-//  */
-// iterateDep = function (name, mapFn) {
-//   let node = getNode(name);
-//   if (node && node.dep) {
-//     let dep = node.dep,
-//     key,
-//     traverseDeep;
-//     for (key in dep) {
-//       if (dep.hasOwnProperty(key)) {
-//         if (getNode(key)) {
-//           traverseDeep = mapFn(key);
-//           if (traverseDeep != false) {
-//             iterateDep(key, mapFn);
-//           }
-//         }
-//       }
-//     }
-//   }
-// },
 /**
  * This method got traversed on all public dependencies nodes, then mark it selected and make it disbled
  * @param  {String} name the dependency node's name that needs to be worked on
@@ -51,12 +27,12 @@ _includePublicDep = function (name) {
   // make it checked
   checkbox.checked = true;
 
-  // make it disabled, if it is a dependency for anothe rmodule
+  // make it disabled, if it is a dependency for another module 
   if (node.selectionDep) {
     checkbox.disabled = true;
   }
 
-  console.log(name);
+  console.log("Included Public: "+name);
 },
 
 /**
@@ -120,16 +96,17 @@ nodeSelect = function (name) {
 _excludePublicDep = function (name) {
   let node = getNode(name),
   checkbox = document.querySelector("input[name='" + name + "']");
-  if (checkbox) {
+  if (checkbox && (!node.selectionDep || node.selectionDep === 0)) {
     // remove the disablity
     checkbox.disabled = false;
     // if the node is seperately selected
-    if (!node.directInclusion) {
+    if (!node.directInclusion ) {
       // make it un-checked
       checkbox.checked = false;
     }
+    node.directInclusion = false;
   }
-  console.log(name);
+  console.log("Excluding : "+name);
 },
 /**
  * This method got traversed on all dependency nodes, then mark it excluded (included = false)
@@ -143,9 +120,9 @@ _excludeDep = function (name) {
 
   if (isPublic(node.name)) {
     _excludePublicDep(name);
+  } else {
+    console.log('non-public exclude:- ' + name);
   }
-
-  console.log('non-public exclude:- ' + name);
 },
 
 /**
@@ -154,7 +131,7 @@ _excludeDep = function (name) {
  */
 _deSelectIterator = function (name) {
   let node = getNode(name);
-  // increase the selectedDep count
+  // decrease the selectedDep count
   node.selectionDep = (node.selectionDep || 1) - 1;
   // if for the first time it is getting included
   if (!node.selectionDep && !node.directInclusion) {
@@ -175,9 +152,8 @@ _deSelectIterator = function (name) {
  * @param  {String} name the name of the node that got selected
  */
 nodeDeSelect = function (name) {
-  let node = treeData.nodes && treeData.nodes[name];
-  if (node && !node.selectionDep) {
-    node.directInclusion = false;
+  let node = getNode(name);
+  if (node) {
     _excludeDep(name);
     // iterate the de-selector among all children
     iterateDep(name, _deSelectIterator);
@@ -282,14 +258,14 @@ loadOptions = function (treeJSON) {
           if (reasons[ri].moduleName === name) {
             traverseDeep = mapFn(modName);
             if (traverseDeep != false) {
-              iterateDep(key, mapFn);
+              iterateDep(modName, mapFn);
             }
           }
         }
       }
     }
 
-
+    /*
     let node = getNode(name);
     if (node && node.dep) {
       let dep = node.dep,
@@ -306,6 +282,7 @@ loadOptions = function (treeJSON) {
         }
       }
     }
+    */
   }
 
   for (key in treeJSON.modules) {
