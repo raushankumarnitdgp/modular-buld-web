@@ -67,8 +67,8 @@ let getNode,
       // Already included, so don't need to iterate through children
       isTraverseFurther = false;
     }
-    
-    console.log(name +" visited count: "+node.visitedCount);
+
+    //console.log(name + " visited count: " + node.visitedCount);
     return isTraverseFurther;
   },
   /**
@@ -95,7 +95,7 @@ let getNode,
       checkbox = document.querySelector("input[name='" + name + "']");
     // decrease the selectedDep count
     node.visitedCount = (node.visitedCount || 1) - 1;
-    console.log(name +" visited count: "+node.visitedCount);
+    //console.log(name + " visited count: " + node.visitedCount);
     // if for the first time it is getting included
     if (node.visitedCount === 0) {
       // do the first inclusion procedure
@@ -227,7 +227,7 @@ let getNode,
         modName = mod.name;
         reasons = mod.reasons;
         //added
-        if (reasons && (modName!=name)) {
+        if (reasons && (modName != name)) {
           ri = 0;
           rl = reasons.length;
           for (ri = 0; ri < rl; ri += 1) {
@@ -264,6 +264,36 @@ let getNode,
     //intitally total size is 0
     document.getElementById('size').innerHTML = '<br>Total size of selected Files: ' + totalSize + ' bytes';
   },
+  isCyclicGraph = function (startName, currentModule) {
+    let i, reasons = currentModule.reasons,
+      iterModule, reasonsMod;
+    currentModule.visited = true;
+    for (i = 0; i < reasons.length; i++) {
+      if (reasons[i].moduleName === startName) {
+        return true;
+      }
+      if (reasons[i].moduleName) {
+        iterModule = getNode(reasons[i].moduleName);
+        if (!iterModule.visited) {
+          return isCyclicGraph(startName, iterModule);
+        }
+      }
+    }
+    return false;
+  },
+  printCyclic = function (treeJSON) {
+    let modules = treeJSON.modules,
+      i, j, startModule, endModule;
+
+    for (i = 0; i < modules.length; i++) {
+      startModule = modules[i];
+      if (isCyclicGraph(startModule.name, startModule) === true) {
+        console.log("Cyclic: " + startModule.name);
+      }
+      for (j = 0; j < modules.length; j++)
+        modules[i].visited = false;
+    }
+  },
   /**
    * This methode handles all generated errors
    * @param  {Stirng} msg the error message
@@ -274,3 +304,5 @@ let getNode,
 
 // Load the data
 loadOptions(treeData);
+
+//printCyclic(treeData);
