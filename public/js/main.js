@@ -14,10 +14,10 @@ let getNode,
    * @param {String} str the path string
    * @return {Boolean} whether this is apublic module or not
    */
-  isPublic1 = function (modulePath) {
+  isPublic = function (modulePath) {
     return !!modulePath.match(/mantle\/renderer-javascript\/charts\//ig);
   },
-  isPublic = function (modulePath) {
+  isPublic1 = function (modulePath) {
     return !!modulePath.match(/M/ig);
   },
   iterateDep,
@@ -121,14 +121,34 @@ let getNode,
    * This method got called when any node got de-selected
    * @param  {String} name the name of the node that got selected
    */
-  nodeDeSelect = function (name) {
-    let node = getNode(name);
+  nodeDeSelect = function (name, treeJSON) {
+    let node = getNode(name),
+      checkbox;
     if (node) {
       node.visitedCount = 0;
       node.isUserSelected = false;
       totalSize -= (node.size || 0);
       // iterate the de-selector among all children
       iterateDep(name, _deSelectIterator);
+      totalSize = 0;
+      //iterate through all modules make visitedCount 0
+      for (key in treeJSON.modules) {
+        if (treeJSON.modules.hasOwnProperty(key)) {
+          treeJSON.modules[key].visitedCount = 0;
+        }
+      }
+      //iterate through all checkbox of public modules
+      for (key in treeJSON.modules) {
+        if (treeJSON.modules.hasOwnProperty(key)) {
+          node = treeJSON.modules[key];
+          if (isPublic(node.name)) {
+            checkbox = document.querySelector("input[name='" + node.name + "']");
+            if ((checkbox.checked === true) && (checkbox.disabled === false)) {
+              nodeSelect(node.name);
+            }
+          }
+        }
+      }
     }
   },
   toggleSelect = function (e) {
@@ -140,7 +160,7 @@ let getNode,
       if (checkStatus) {
         dontToggle = nodeSelect(name);
       } else {
-        dontToggle = nodeDeSelect(name);
+        dontToggle = nodeDeSelect(name, treeData);
       }
       // if (!dontToggle) {
       //   node.checked = !checkStatus;
