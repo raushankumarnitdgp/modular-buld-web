@@ -14,8 +14,11 @@ let getNode,
    * @param {String} str the path string
    * @return {Boolean} whether this is apublic module or not
    */
-  isPublic = function (modulePath) {
+  isPublic1 = function (modulePath) {
     return !!modulePath.match(/mantle\/renderer-javascript\/charts\//ig);
+  },
+  isPublic = function (modulePath) {
+    return !!modulePath.match(/M/ig);
   },
   iterateDep,
   /**
@@ -38,7 +41,8 @@ let getNode,
    * @param  {String} name the dependency node's name that needs to be worked on
    */
   _selectIterator = function (name) {
-    let node = getNode(name);
+    let node = getNode(name),
+      isTraverseFurther = false;
     // intial the visitedCount count of node
     node.visitedCount = (node.visitedCount || 0);
     // if visitedCount is 0 then add its size 
@@ -46,21 +50,26 @@ let getNode,
       totalSize += (node.size || 0);
       // increment the count
       node.visitedCount = node.visitedCount + 1;
+      // console.log(name +" visited count: "+node.visitedCount);
       if (isPublic(node.name)) {
         _includePublicDep(name);
       }
-      return true;
+      isTraverseFurther = true;
     } else {
       // increment the count
       node.visitedCount = node.visitedCount + 1;
+      // console.log(name +" visited count: "+node.visitedCount);
       // ** Special case **//
       // If the node is already included but it is a public one, then we might need to disable it
       if (isPublic(node.name)) {
         _includePublicDep(name);
       }
       // Already included, so don't need to iterate through children
-      return false;
+      isTraverseFurther = false;
     }
+    
+    console.log(name +" visited count: "+node.visitedCount);
+    return isTraverseFurther;
   },
   /**
    * This method got called when any node got selected
@@ -68,6 +77,7 @@ let getNode,
    */
   nodeSelect = function (name) {
     let node = getNode(name);
+    console.log('\n\n')
     if (node) {
       node.visitedCount = 1;
       node.isUserSelected = true;
@@ -85,6 +95,7 @@ let getNode,
       checkbox = document.querySelector("input[name='" + name + "']");
     // decrease the selectedDep count
     node.visitedCount = (node.visitedCount || 1) - 1;
+    console.log(name +" visited count: "+node.visitedCount);
     // if for the first time it is getting included
     if (node.visitedCount === 0) {
       // do the first inclusion procedure
@@ -216,7 +227,7 @@ let getNode,
         modName = mod.name;
         reasons = mod.reasons;
         //added
-        if (reasons) {
+        if (reasons && (modName!=name)) {
           ri = 0;
           rl = reasons.length;
           for (ri = 0; ri < rl; ri += 1) {
