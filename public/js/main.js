@@ -312,7 +312,14 @@ let getNode,
    */
   printSizeSelected = function () {
     //intitally total size is 0
-    document.getElementById('size').innerHTML = '<br>Total size of selected Files: ' + totalSize + ' bytes';
+    var kb = (totalSize/1024).toPrecision(4), mb;
+    mb = (kb/1024).toPrecision(4);
+    if(mb > 1)
+      document.getElementById('size').innerHTML = '<br>Total size of selected Files: ' + mb + ' MB';
+    else if(kb > 1)
+      document.getElementById('size').innerHTML = '<br>Total size of selected Files: ' + kb + ' KB';
+    else
+      document.getElementById('size').innerHTML = '<br>Total size of selected Files: ' + totalSize + ' bytes';
   },
   isCyclicGraph = function (startName, currentModule) {
     let i, reasons = currentModule.reasons,
