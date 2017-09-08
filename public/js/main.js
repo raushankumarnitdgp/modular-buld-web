@@ -77,7 +77,7 @@ let getNode,
    */
   nodeSelect = function (name) {
     let node = getNode(name);
-    console.log('\n\n')
+    //console.log('\n\n')
     if (node) {
       node.visitedCount = 1;
       node.isUserSelected = true;
@@ -97,7 +97,18 @@ let getNode,
     node.visitedCount = (node.visitedCount || 1) - 1;
     //console.log(name + " visited count: " + node.visitedCount);
     // if for the first time it is getting included
-    if (node.visitedCount === 0) {
+    if (isPublic(node.name) && node.visitedCount === 0 && node.isUserSelected && !checkbox.disabled) {
+      totalSize -= (node.size || 0);
+      if (isPublic(node.name)) {
+        // public nodes should be reset now
+        // remove the disablity
+        checkbox.disabled = false;
+        // make it un-checked
+        checkbox.checked = false;
+      }
+      return true;
+    } else
+    if (!isPublic(node.name) && node.visitedCount === 0) {
       // do the first inclusion procedure
       totalSize -= (node.size || 0);
       if (isPublic(node.name)) {
@@ -109,9 +120,14 @@ let getNode,
       }
       return true;
     } else {
-      if (isPublic(node.name) && node.isUserSelected && (node.visitedCount === 1)) {
+      if (isPublic(node.name) && node.isUserSelected && (node.visitedCount === 0 || node.visitedCount === 1)) {
         // call this for public nodes that are direct inclusion, should be enabled now
         checkbox.disabled = false;
+      } else if (isPublic(node.name) && (node.visitedCount === 0 || node.visitedCount === 1)) {
+        // remove the disablity
+        checkbox.disabled = false;
+        // make it un-checked
+        checkbox.checked = false;
       }
       // this node is not excluded, so don't need to iterate through children
       return false;
@@ -131,10 +147,24 @@ let getNode,
       // iterate the de-selector among all children
       iterateDep(name, _deSelectIterator);
       totalSize = 0;
+
       //iterate through all modules make visitedCount 0
       for (key in treeJSON.modules) {
         if (treeJSON.modules.hasOwnProperty(key)) {
           treeJSON.modules[key].visitedCount = 0;
+        }
+      }
+      //iterate through all checkbox of public modules
+      for (key in treeJSON.modules) {
+        if (treeJSON.modules.hasOwnProperty(key)) {
+          node = treeJSON.modules[key];
+          if (isPublic(node.name)) {
+            checkbox = document.querySelector("input[name='" + node.name + "']");
+            if ((checkbox.checked === true) && (checkbox.disabled === true)) {
+              checkbox.disabled = false;
+              if (!node.isUserSelected) checkbox.checked = false;
+            }
+          }
         }
       }
       //iterate through all checkbox of public modules
