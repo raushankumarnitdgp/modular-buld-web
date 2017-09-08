@@ -190,30 +190,24 @@ class DependencyManager {
 
             //iterate through all modules make visitedCount 0
             for (key in modules) {
-                if (modules.hasOwnProperty(key)) {
-                    modules[key].visitedCount = 0;
-                }
+                modules[key].visitedCount = 0;
             }
             //iterate through all checkbox of public modules
             for (key in modules) {
-                if (modules.hasOwnProperty(key)) {
-                    node = modules[key];
-                    if (this.isPublic(node.name)) {
-                        if ((node.checked === true) && (node.disabled === true)) {
-                            node.disabled = false;
-                            if (!node.isUserSelected) node.checked = false;
-                        }
+                node = modules[key];
+                if (this.isPublic(node.name)) {
+                    if ((node.checked === true) && (node.disabled === true)) {
+                        node.disabled = false;
+                        if (!node.isUserSelected) node.checked = false;
                     }
                 }
             }
             //iterate through all checkbox of public modules
             for (key in modules) {
-                if (modules.hasOwnProperty(key)) {
-                    node = modules[key];
-                    if (this.isPublic(node.name)) {
-                        if ((node.checked === true) && (node.disabled === false)) {
-                            this.nodeSelect(node.name);
-                        }
+                node = modules[key];
+                if (this.isPublic(node.name)) {
+                    if ((node.checked === true) && (node.disabled === false)) {
+                        this.nodeSelect(node.name);
                     }
                 }
             }
@@ -225,12 +219,10 @@ class DependencyManager {
             publicModule = [];
 
         for (key in moduleData) {
-            if (moduleData.hasOwnProperty(key)) {
-                node = moduleData[key];
-                if (this.isPublic(node.name)) {
-                    publicModule[i] = node;
-                    i++;
-                }
+            node = moduleData[key];
+            if (this.isPublic(node.name)) {
+                publicModule[i] = node;
+                i++;
             }
         }
         return publicModule;
@@ -249,9 +241,22 @@ class DependencyManager {
         mb = (kb / 1024).toPrecision(4);
         if (mb > 1)
             return mb;
-        else if(kb > 1)
+        else if (kb > 1)
             return kb;
         else
             return this.totalSize;
+    }
+    getModules() {
+        let publicModules = this.getPublicModules(),
+            key, selectedModule = [],
+            i = 0;
+
+        for (key in publicModules) {
+            if (publicModules[key].checked) {
+                selectedModule[i] = publicModules[key];
+                i++;
+            }
+        }
+        return selectedModule;
     }
 };
