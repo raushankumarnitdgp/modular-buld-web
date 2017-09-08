@@ -1,7 +1,7 @@
 # modular-buld-web
-to use file dependency-manager.js<br>
 
-1. create a object of DependencyManager<br>
+
+1. to use file dependency-manager.js ,create a object of DependencyManager<br>
    
    app = new DependencyManager(treeData) where treeData = {stats.json}<br>
    
@@ -16,4 +16,11 @@ to use file dependency-manager.js<br>
 
     sizeObj = new GetSizeByName(treeData) where treeData = {stats.json}<br>
     
-    a. sizeObj.getSizeByName(name ,alreadySelected) //get the size, that will be added if module.name = name ,<br>when there is list of alreadySelected public modules where name is module name and alreadySelected is array of module names
+    a. sizeObj.getSizeByName(name ,alreadySelected) //get the size, that will be added if module.name = name ,<br>when there is list of alreadySelected public modules where name is module name and alreadySelected is array of module names<br>
+       example: <br>
+       name = './develop/src/mantle/renderer-javascript/charts/fusioncharts.mscartesian.js';<br>
+       alreadySelected=['./develop/src/mantle/renderer-javascript/charts/fusioncharts.basechart.js'];<br>
+       sizeObj.getSizeByName(name ,alreadySelected);
+       
+    
+      
