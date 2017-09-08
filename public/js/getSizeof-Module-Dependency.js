@@ -101,17 +101,19 @@ class GetSizeByName {
             return true;
         }
     }
+    //get current total size 
     getSize() {
         var kb = (this.totalSize / 1024).toPrecision(4),
             mb;
         mb = (kb / 1024).toPrecision(4);
         if (mb > 1)
-            return mb;
+            return mb.toString()+' MB';
         else if (kb > 1)
-            return kb;
+            return kb.toString()+' KB';
         else
-            return this.totalSize;
+            return this.totalSize+' bytes';
     }
+    //get the size, that will be added if module.name = name ,when there is list of alreadySelected public modules 
     getSizeByName(name ,alreadySelected) {
         let i = 0, key, modules = this.moduleData;
         for(key in modules) {

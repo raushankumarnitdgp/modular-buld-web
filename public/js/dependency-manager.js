@@ -100,7 +100,7 @@ class DependencyManager {
         //console.log(name + " visited count: " + node.visitedCount);
         return isTraverseFurther;
     }
-    iterateUP(name) {
+    iterateDep(name, isSelect) {
         let modules = this.moduleData,
             i = 0,
             l = modules.length,
@@ -121,41 +121,15 @@ class DependencyManager {
                     if (reasons[ri].moduleName === name) {
                         //added
                         modInName[modName] = modules[i];
-                        traverseDeep = this._deSelectIterator(modName);
+                        traverseDeep = isSelect ? this._selectIterator(modName) : this._deSelectIterator(modName);
+                        // if(isSelect === true) {
+                        //     traverseDeep = this._selectIterator(modName);
+                        // } else {
+                        //     traverseDeep = this._deSelectIterator(modName);
+                        // }
                         //change here
                         if (traverseDeep === true) {
-                            this.iterateUP(modName);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    iterateDep(name) {
-        let modules = this.moduleData,
-            i = 0,
-            l = modules.length,
-            mod,
-            modName,
-            reasons,
-            ri, rl, modInName = {},
-            traverseDeep;
-        for (i = 0; i < l; i += 1) {
-            mod = modules[i];
-            modName = mod.name;
-            reasons = mod.reasons;
-            //added
-            if (reasons && (modName != name)) {
-                ri = 0;
-                rl = reasons.length;
-                for (ri = 0; ri < rl; ri += 1) {
-                    if (reasons[ri].moduleName === name) {
-                        //added
-                        modInName[modName] = modules[i];
-                        traverseDeep = this._selectIterator(modName);
-                        //change here
-                        if (traverseDeep === true) {
-                            this.iterateDep(modName);
+                            this.iterateDep(modName, isSelect);
                         }
                     }
                 }
@@ -170,7 +144,7 @@ class DependencyManager {
             node.checked = true;
             node.disabled = false;
             this.totalSize += (node.size || 0);
-            this.iterateDep(name);
+            this.iterateDep(name, true);
             return true;
         }
     }
@@ -185,7 +159,7 @@ class DependencyManager {
             node.checked = false;
             this.totalSize -= (node.size || 0);
             // iterate the de-selector among all children
-            this.iterateUP(name);
+            this.iterateDep(name, false);
             this.totalSize = 0;
 
             //iterate through all modules make visitedCount 0
@@ -213,6 +187,7 @@ class DependencyManager {
             }
         }
     }
+    //return all public modules
     getPublicModules() {
         let i = 0,
             node, key, moduleData = this.moduleData,
@@ -227,25 +202,29 @@ class DependencyManager {
         }
         return publicModule;
     }
+    //select module by name
     selectModule(name) {
         this.nodeSelect(name);
         return this.getPublicModules();
     }
+    //deselect module by name
     deselectModule(name) {
         this.nodeDeSelect(name);
         return this.getPublicModules();
     }
+    //get current total size 
     getSize() {
         var kb = (this.totalSize / 1024).toPrecision(4),
             mb;
         mb = (kb / 1024).toPrecision(4);
         if (mb > 1)
-            return mb;
+            return mb.toString()+' MB';
         else if (kb > 1)
-            return kb;
+            return kb.toString()+' KB';
         else
-            return this.totalSize;
+            return this.totalSize+' bytes';
     }
+    //list of current public modules selected
     getModules() {
         let publicModules = this.getPublicModules(),
             key, selectedModule = [],
