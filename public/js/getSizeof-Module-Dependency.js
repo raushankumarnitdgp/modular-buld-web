@@ -81,7 +81,7 @@ class GetSizeByName {
                         modInName[modName] = modules[i];
                         traverseDeep = this._selectIterator(modName);
                         //change here
-                        if (traverseDeep === true) {
+                        if (traverseDeep) {
                             this.iterateDep(modName);
                         }
                     }
