@@ -114,7 +114,7 @@ class DependencyManager {
             modName = mod.name;
             reasons = mod.reasons;
             //added
-            if (reasons && (modName != name)) {
+            if (reasons && (modName !== name)) {
                 ri = 0;
                 rl = reasons.length;
                 for (ri = 0; ri < rl; ri += 1) {
@@ -218,11 +218,11 @@ class DependencyManager {
             mb;
         mb = (kb / 1024).toPrecision(4);
         if (mb > 1)
-            return mb.toString()+' MB';
+            return mb.toString() + ' MB';
         else if (kb > 1)
-            return kb.toString()+' KB';
+            return kb.toString() + ' KB';
         else
-            return this.totalSize+' bytes';
+            return this.totalSize + ' bytes';
     }
     //list of current public modules selected
     getModules() {
@@ -237,5 +237,23 @@ class DependencyManager {
             }
         }
         return selectedModule;
+    }
+    //list of userselected modules
+    getUserSelectedModules(shortName) {
+        let publicModules = this.getPublicModules(),
+            key, selectedModuleName = [],
+            i = 0;
+
+        for (key in publicModules) {
+            if (publicModules[key].checked && publicModules[key].isUserSelected) {
+                if (shortName) {
+                    selectedModuleName[i] = publicModules[key].name.replace(/(.*)\/fusioncharts\.(.*)\.js?/, '$2');
+                } else {
+                    selectedModuleName[i] = publicModules[key].name;
+                }
+                i++;
+            }
+        }
+        return selectedModuleName;
     }
 };

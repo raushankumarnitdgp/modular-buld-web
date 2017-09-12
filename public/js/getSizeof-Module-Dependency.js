@@ -72,7 +72,7 @@ class GetSizeByName {
             modName = mod.name;
             reasons = mod.reasons;
             //added
-            if (reasons && (modName != name)) {
+            if (reasons && (modName !== name)) {
                 ri = 0;
                 rl = reasons.length;
                 for (ri = 0; ri < rl; ri += 1) {
