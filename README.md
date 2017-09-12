@@ -11,6 +11,7 @@
    c. app.deselectModule(name) //to deselect a module by name<br>
    d. app.getSize() //to get current total size of selected modules<br>
    e. app.getModules() //list of currently selected public modules<br>
+   f. app.printCyclic() // list the nodes involved in cyclic dependencies
    
 2. to use file getSizeof-Module-Dependency.js , create a object of GetSizeByName<br>
 
