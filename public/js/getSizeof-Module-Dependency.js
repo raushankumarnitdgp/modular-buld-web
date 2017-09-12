@@ -33,7 +33,7 @@ class GetSizeByName {
         // intial the visitedCount count of node
         node.visitedCount = (node.visitedCount || 0);
         // if visitedCount is 0 then add its size 
-        if (node.visitedCount === 0) {
+        if (!node.visitedCount) {
             this.totalSize += (node.size || 0);
             // increment the count
             node.visitedCount = node.visitedCount + 1;

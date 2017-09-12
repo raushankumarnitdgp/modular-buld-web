@@ -23,7 +23,7 @@ class DependencyManager {
         node.visitedCount = (node.visitedCount || 1) - 1;
         //console.log(name + " visited count: " + node.visitedCount);
         // if for the first time it is getting included
-        if (this.isPublic(node.name) && node.visitedCount === 0 && node.isUserSelected && !node.disabled) {
+        if (this.isPublic(node.name) && !node.visitedCount && node.isUserSelected && !node.disabled) {
             this.totalSize -= (node.size || 0);
             if (this.isPublic(node.name)) {
                 // public nodes should be reset now
@@ -34,7 +34,7 @@ class DependencyManager {
             }
             return true;
         } else
-        if (!(this.isPublic(node.name)) && node.visitedCount === 0) {
+        if (!this.isPublic(node.name) && !node.visitedCount) {
             // do the first inclusion procedure
             this.totalSize -= (node.size || 0);
             if (this.isPublic(node.name)) {
@@ -46,10 +46,10 @@ class DependencyManager {
             }
             return true;
         } else {
-            if (this.isPublic(node.name) && node.isUserSelected && (node.visitedCount === 0 || node.visitedCount === 1)) {
+            if (this.isPublic(node.name) && node.isUserSelected && node.visitedCount <= 1) {
                 // call this for public nodes that are direct inclusion, should be enabled now
                 node.disabled = false;
-            } else if (this.isPublic(node.name) && (node.visitedCount === 0 || node.visitedCount === 1)) {
+            } else if (this.isPublic(node.name) && node.visitedCount <= 1) {
                 // remove the disablity
                 node.disabled = false;
                 // make it un-checked
@@ -75,7 +75,7 @@ class DependencyManager {
         // intial the visitedCount count of node
         node.visitedCount = (node.visitedCount || 0);
         // if visitedCount is 0 then add its size 
-        if (node.visitedCount === 0) {
+        if (!node.visitedCount) {
             this.totalSize += (node.size || 0);
             // increment the count
             node.visitedCount = node.visitedCount + 1;
@@ -128,7 +128,7 @@ class DependencyManager {
                         //     traverseDeep = this._deSelectIterator(modName);
                         // }
                         //change here
-                        if (traverseDeep === true) {
+                        if (traverseDeep) {
                             this.iterateDep(modName, isSelect);
                         }
                     }
@@ -170,7 +170,7 @@ class DependencyManager {
             for (key in modules) {
                 node = modules[key];
                 if (this.isPublic(node.name)) {
-                    if ((node.checked === true) && (node.disabled === true)) {
+                    if (node.checked && node.disabled) {
                         node.disabled = false;
                         if (!node.isUserSelected) node.checked = false;
                     }
@@ -180,7 +180,7 @@ class DependencyManager {
             for (key in modules) {
                 node = modules[key];
                 if (this.isPublic(node.name)) {
-                    if ((node.checked === true) && (node.disabled === false)) {
+                    if (node.checked && node.disabled) {
                         this.nodeSelect(node.name);
                     }
                 }
@@ -256,4 +256,35 @@ class DependencyManager {
         }
         return selectedModuleName;
     }
+    isCyclicGraph (startName, currentModule) {
+        let i, reasons = currentModule.reasons,
+          iterModule, reasonsMod;
+        currentModule.visited = true;
+        for (i = 0; i < reasons.length; i++) {
+          if (reasons[i].moduleName === startName) {
+            return true;
+          }
+          if (reasons[i].moduleName) {
+            iterModule = this.getNode(reasons[i].moduleName);
+            if (!iterModule.visited) {
+              return this.isCyclicGraph(startName, iterModule);
+            }
+          }
+        }
+        return false;
+      }
+
+      printCyclic () {
+        let modules = this.moduleData,
+          i, j, startModule, endModule;
+  
+        for (i = 0; i < modules.length; i++) {
+          startModule = modules[i];
+          if (this.isCyclicGraph(startModule.name, startModule)) {
+            console.log("Cyclic: " + startModule.name);
+          }
+          for (j = 0; j < modules.length; j++)
+            modules[i].visited = false;
+        }
+      }
 };
