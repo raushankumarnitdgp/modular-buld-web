@@ -323,36 +323,49 @@ function findDependencySize(treeData) {
       else
         document.getElementById('size').innerHTML = '<br>Total size of selected Files: ' + totalSize + ' bytes';
     },
-    isCyclicGraph = function (startName, currentModule) {
+    isCyclicGraph = function (startName, currentModule, path) {
       let i, reasons = currentModule.reasons,
-        iterModule, reasonsMod;
+          iterModule;
       currentModule.visited = true;
       for (i = 0; i < reasons.length; i++) {
-        if (reasons[i].moduleName === startName) {
-          return true;
-        }
-        if (reasons[i].moduleName) {
-          iterModule = getNode(reasons[i].moduleName);
-          if (!iterModule.visited) {
-            return isCyclicGraph(startName, iterModule);
+          if (reasons[i].moduleName === startName) {
+              return true;
           }
-        }
+          if (reasons[i].moduleName) {
+              iterModule = getNode(reasons[i].moduleName);
+              if (iterModule && !iterModule.visited) {
+                  if (isCyclicGraph(startName, iterModule, path)) {
+                      path[path.length] = iterModule.name;
+                      return true;
+                  }
+              }
+          }
       }
       return false;
-    },
-    printCyclic = function (treeJSON) {
+  }
+
+  printCyclic = function(treeJSON) {
       let modules = treeJSON.modules,
-        i, j, startModule, endModule;
+          i, j, startModule, path = [];
+
+      for (j = 0; j < modules.length; j++) {
+          modules[j].visited = false;
+      }
 
       for (i = 0; i < modules.length; i++) {
-        startModule = modules[i];
-        if (isCyclicGraph(startModule.name, startModule) === true) {
-          console.log("Cyclic: " + startModule.name);
-        }
-        for (j = 0; j < modules.length; j++)
-          modules[i].visited = false;
+          startModule = modules[i];
+          path = [];
+          path[0] = startModule.name;
+          if (isCyclicGraph(startModule.name, startModule, path)) {
+              console.log("Cyclic at: " + startModule.name);
+              path[path.length] = startModule.name;
+              console.log("Cyclic Path : " + path);
+          }
+          for (j = 0; j < modules.length; j++) {
+              modules[j].visited = false;
+          }
       }
-    },
+  }
     /**
      * This methode handles all generated errors
      * @param  {Stirng} msg the error message

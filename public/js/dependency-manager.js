@@ -128,7 +128,7 @@ class DependencyManager {
                         //     traverseDeep = this._deSelectIterator(modName);
                         // }
                         //change here
-                        if (traverseDeep) {
+                        if (traverseDeep === true) {
                             this.iterateDep(modName, isSelect);
                         }
                     }
@@ -245,7 +245,7 @@ class DependencyManager {
             i = 0;
 
         for (key in publicModules) {
-            if (publicModules[key].checked && publicModules[key].isUserSelected) {
+            if ((publicModules[key].checked === true) && (publicModules[key].isUserSelected === true)) {
                 if (shortName) {
                     selectedModuleName[i] = publicModules[key].name.replace(/(.*)\/fusioncharts\.(.*)\.js?/, '$2');
                 } else {
@@ -256,35 +256,47 @@ class DependencyManager {
         }
         return selectedModuleName;
     }
-    isCyclicGraph (startName, currentModule) {
+    isCyclicGraph(startName, currentModule, path) {
         let i, reasons = currentModule.reasons,
-          iterModule, reasonsMod;
+            iterModule;
         currentModule.visited = true;
         for (i = 0; i < reasons.length; i++) {
-          if (reasons[i].moduleName === startName) {
-            return true;
-          }
-          if (reasons[i].moduleName) {
-            iterModule = this.getNode(reasons[i].moduleName);
-            if (!iterModule.visited) {
-              return this.isCyclicGraph(startName, iterModule);
+            if (reasons[i].moduleName === startName) {
+                return true;
             }
-          }
+            if (reasons[i].moduleName) {
+                iterModule = this.getNode(reasons[i].moduleName);
+                if (iterModule && !iterModule.visited) {
+                    if (this.isCyclicGraph(startName, iterModule, path)) {
+                        path[path.length] = iterModule.name;
+                        return true;
+                    }
+                }
+            }
         }
         return false;
-      }
+    }
 
-      printCyclic () {
+    printCyclic() {
         let modules = this.moduleData,
-          i, j, startModule, endModule;
-  
-        for (i = 0; i < modules.length; i++) {
-          startModule = modules[i];
-          if (this.isCyclicGraph(startModule.name, startModule)) {
-            console.log("Cyclic: " + startModule.name);
-          }
-          for (j = 0; j < modules.length; j++)
-            modules[i].visited = false;
+            i, j, startModule, path = [];
+
+        for (j = 0; j < modules.length; j++) {
+            modules[j].visited = false;
         }
-      }
+
+        for (i = 0; i < modules.length; i++) {
+            startModule = modules[i];
+            path = [];
+            path[0] = startModule.name;
+            if (this.isCyclicGraph(startModule.name, startModule, path)) {
+                console.log("Cyclic at: " + startModule.name);
+                path[path.length] = startModule.name;
+                console.log("Cyclic Path : " + path);
+            }
+            for (j = 0; j < modules.length; j++) {
+                modules[j].visited = false;
+            }
+        }
+    }
 };
