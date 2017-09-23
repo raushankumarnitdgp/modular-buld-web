@@ -1,4 +1,14 @@
 # modular-buld-web
+ 
+ Newly added Dependent on graph, to run:
+ 1. First run getSizeof-Module-Dependency.js on node: 
+     node getSizeof-Module-Dependency.js , then run visual.html to get the graph represntation.
+
+
+     app.dependenciesPathOfModule('./develop/src/mantle/renderer-javascript/charts/fusioncharts.pie3d.js'); 
+
+    above will write a treeData1.js with object containing the heirarchy/ dependency tree.
+    then we use this treeData1.js in visual.html to generate graph
 
 
 1. to use file dependency-manager.js ,create a object of DependencyManager<br>
